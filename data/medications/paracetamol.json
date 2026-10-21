@@ -1,0 +1,11 @@
+{
+  "medication_name": "Paracetamol",
+  "brand_names": ["Tylenol", "Panadol", "Calpol", "Acetaminophen"],
+  "therapeutic_class": "Analgesic and Antipyretic",
+  "indications": "Indicated for the relief of mild to moderate pain (such as headaches, toothaches, musculoskeletal aches, osteoarthritis pain, and dysmenorrhea) and reduction of fever associated with common colds, influenza, and routine infections.",
+  "dosage_and_administration": "Adults and adolescents (12 years and older): 500 mg to 1000 mg orally every 4 to 6 hours as needed. Do not exceed a single dose of 1000 mg. The absolute maximum daily dose is 4000 mg (4 grams) in 24 hours for healthy adults; however, 2000 mg to 3000 mg daily limit is recommended for prolonged use or elderly patients. Pediatric dosing is weight-based: 10 to 15 mg/kg per dose every 4 to 6 hours (max 5 doses in 24 hours). Administer with or without food.",
+  "contraindications": "Strictly contraindicated in patients with known severe hypersensitivity to paracetamol/acetaminophen or excipients. Severe active hepatic impairment or severe active liver failure. Caution in chronic alcoholism, severe malnutrition, or severe dehydration.",
+  "drug_interactions": "Chronic high-dose paracetamol increases the anticoagulant effect of Warfarin and other coumarins, raising bleeding risk. Concomitant alcohol consumption significantly elevates the risk of severe hepatotoxicity. Co-administration with enzyme-inducing drugs (e.g., Carbamazepine, Phenobarbital, Phenytoin, Rifampicin) accelerates metabolite formation that depletes glutathione, increasing liver toxicity risk.",
+  "side_effects": "Common: Generally well-tolerated at therapeutic doses. Rare side effects include mild nausea, dyspepsia, or pruritus. Severe/Rare: Thrombocytopenia, neutropenia, acute generalized exanthematous pustulosis (AGEP), toxic epidermal necrolysis (TEN), and Stevens-Johnson syndrome (SJS).",
+  "critical_warnings": "ACUTE LIVER TOXICITY WARNING: Exceeding 4000 mg per 24 hours can cause severe, fatal acute liver necrosis and liver failure. Patients must be warned never to combine paracetamol with other combination medications containing acetaminophen (e.g., over-the-counter cough and flu remedies). Immediate administration of N-acetylcysteine (NAC) is required in suspected overdose."
+}

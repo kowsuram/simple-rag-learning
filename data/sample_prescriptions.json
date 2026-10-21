@@ -1,0 +1,128 @@
+[
+  {
+    "id": "rx-101",
+    "title": "Case 1: Active Peptic Ulcer + NSAID (Critical Contraindication)",
+    "patient_name": "Eleanor Vance",
+    "age": 64,
+    "gender": "Female",
+    "clinical_conditions": "History of recurrent active peptic ulcer disease with upper GI bleeding 6 months ago; Osteoarthritis knee pain.",
+    "known_allergies": "No known drug allergies (NKDA)",
+    "current_medications": "Omeprazole 20mg daily",
+    "prescribed_rx": [
+      {
+        "medication": "Ibuprofen",
+        "brand": "Advil / Motrin",
+        "dosage": "800 mg",
+        "frequency": "Three times daily (TID) with meals",
+        "duration": "14 days",
+        "indication": "Severe acute knee flare-up"
+      }
+    ],
+    "notes": "Patient requesting strong pain relief for knee inflammation."
+  },
+  {
+    "id": "rx-102",
+    "title": "Case 2: Accidental Acetaminophen Overdose (Hepatotoxicity Warning)",
+    "patient_name": "Marcus Chen",
+    "age": 42,
+    "gender": "Male",
+    "clinical_conditions": "Acute viral bronchitis with high fever and muscle aches; Moderate alcohol consumption (3-4 drinks/weekend).",
+    "known_allergies": "None",
+    "current_medications": "Over-the-counter Tylenol Extra Strength 500mg tablets (takes 2 tablets every 4 hours = 6000mg/day)",
+    "prescribed_rx": [
+      {
+        "medication": "Paracetamol",
+        "brand": "Panadol Cold & Flu",
+        "dosage": "1000 mg (contains acetaminophen 1000mg)",
+        "frequency": "Every 4 hours as needed for fever",
+        "duration": "7 days",
+        "indication": "Fever and flu symptoms"
+      }
+    ],
+    "notes": "Patient does not realize prescription combines with their existing OTC acetaminophen, exceeding the 4000mg/day absolute safe ceiling."
+  },
+  {
+    "id": "rx-103",
+    "title": "Case 3: Statin + Food-Drug Interaction (Rhabdomyolysis Risk)",
+    "patient_name": "Robert Miller",
+    "age": 58,
+    "gender": "Male",
+    "clinical_conditions": "Hyperlipidemia, primary hypercholesterolemia, coronary artery disease risk.",
+    "known_allergies": "NKDA",
+    "current_medications": "Aspirin 81mg daily",
+    "prescribed_rx": [
+      {
+        "medication": "Atorvastatin",
+        "brand": "Lipitor",
+        "dosage": "80 mg (maximum dose)",
+        "frequency": "Once daily at bedtime",
+        "duration": "Continuous",
+        "indication": "Aggressive LDL-C reduction"
+      }
+    ],
+    "notes": "Patient drinks 1 to 1.5 liters of freshly squeezed grapefruit juice every morning for breakfast."
+  },
+  {
+    "id": "rx-104",
+    "title": "Case 4: Severe Renal Impairment + Metformin (Lactic Acidosis)",
+    "patient_name": "Harold Jenkins",
+    "age": 73,
+    "gender": "Male",
+    "clinical_conditions": "Type 2 Diabetes Mellitus, Stage 4 Chronic Kidney Disease (latest estimated GFR = 24 mL/min/1.73 m²).",
+    "known_allergies": "Sulfa drugs",
+    "current_medications": "Furosemide 20mg daily",
+    "prescribed_rx": [
+      {
+        "medication": "Metformin",
+        "brand": "Glucophage",
+        "dosage": "1000 mg",
+        "frequency": "Twice daily with meals (2000mg/day)",
+        "duration": "Chronic",
+        "indication": "Glycemic control"
+      }
+    ],
+    "notes": "Prescription renewal request. Lab tests show eGFR declined from 38 to 24 mL/min."
+  },
+  {
+    "id": "rx-105",
+    "title": "Case 5: Penicillin Anaphylaxis + Amoxicillin (Severe Allergy)",
+    "patient_name": "Sarah Connor",
+    "age": 31,
+    "gender": "Female",
+    "clinical_conditions": "Acute bacterial sinusitis with facial pressure and purulent nasal discharge.",
+    "known_allergies": "Severe Penicillin allergy (developed anaphylaxis and facial angioedema in childhood).",
+    "current_medications": "None",
+    "prescribed_rx": [
+      {
+        "medication": "Amoxicillin",
+        "brand": "Amoxil",
+        "dosage": "500 mg",
+        "frequency": "Every 8 hours",
+        "duration": "10 days",
+        "indication": "Acute bacterial sinusitis"
+      }
+    ],
+    "notes": "Doctor prescribed first-line antibiotic without verifying allergy record."
+  },
+  {
+    "id": "rx-106",
+    "title": "Case 6: Routine Bacterial Pharyngitis (Safe Prescription)",
+    "patient_name": "David Wilson",
+    "age": 27,
+    "gender": "Male",
+    "clinical_conditions": "Streptococcal pharyngitis (Strep throat confirmed by rapid antigen test).",
+    "known_allergies": "No known drug allergies (NKDA). Normal renal and hepatic function.",
+    "current_medications": "None",
+    "prescribed_rx": [
+      {
+        "medication": "Amoxicillin",
+        "brand": "Amoxil",
+        "dosage": "500 mg",
+        "frequency": "Every 8 hours with water",
+        "duration": "10 days",
+        "indication": "Streptococcal pharyngitis"
+      }
+    ],
+    "notes": "Standard approved first-line regimen. Patient instructed to finish entire 10-day course."
+  }
+]

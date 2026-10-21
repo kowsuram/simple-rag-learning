@@ -1,0 +1,16 @@
+services:
+  pgvector-db:
+    image: pgvector/pgvector:pg16
+    container_name: healthcare-pgvector
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: healthcaredb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  pgdata:
