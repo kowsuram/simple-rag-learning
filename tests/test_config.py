@@ -8,6 +8,42 @@ from src.config import AppConfig
 
 
 class TestAppConfig(unittest.TestCase):
+    def test_cloudflare_headers_route_through_configured_gateway(self):
+        with patch.dict(
+            os.environ,
+            {
+                "AI_PROVIDER": "cloudflare",
+                "CLOUDFLARE_ACCOUNT_ID": "test-account",
+                "CLOUDFLARE_API_TOKEN": "test-token",
+                "CLOUDFLARE_AI_GATEWAY_ID": "healthcare-gateway",
+            },
+            clear=True,
+        ):
+            config = AppConfig()
+
+        self.assertEqual(
+            config.cloudflare_headers,
+            {
+                "Authorization": "Bearer test-token",
+                "cf-aig-gateway-id": "healthcare-gateway",
+            },
+        )
+
+    def test_cloudflare_requires_gateway_id(self):
+        with patch.dict(
+            os.environ,
+            {
+                "AI_PROVIDER": "cloudflare",
+                "CLOUDFLARE_ACCOUNT_ID": "test-account",
+                "CLOUDFLARE_API_TOKEN": "test-token",
+            },
+            clear=True,
+        ):
+            config = AppConfig()
+
+        with self.assertRaisesRegex(ValueError, "CLOUDFLARE_AI_GATEWAY_ID"):
+            _ = config.cloudflare_headers
+
     def test_cloudflare_credentials_select_cloudflare_defaults(self):
         with patch.dict(
             os.environ,

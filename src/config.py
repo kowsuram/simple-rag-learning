@@ -59,6 +59,13 @@ class AppConfig(BaseModel):
     cloudflare_api_token: SecretStr = Field(
         default_factory=lambda: SecretStr(os.getenv("CLOUDFLARE_API_TOKEN", ""))
     )
+    cloudflare_ai_gateway_id: str = Field(
+        default_factory=lambda: (
+            os.getenv("CLOUDFLARE_AI_GATEWAY_ID")
+            or os.getenv("CLOUDFLARE_GATEWAY_ID")
+            or os.getenv("AI_GATEWAY_ID", "")
+        )
+    )
     ollama_base_url: str = Field(default_factory=lambda: os.getenv("OLLAMA_BASE_URL", "http://localhost:11434"))
     llm_model: str = Field(default_factory=_default_llm_model)
     embedding_model: str = Field(default_factory=_default_embedding_model)
@@ -95,11 +102,18 @@ class AppConfig(BaseModel):
 
     @property
     def cloudflare_headers(self) -> dict[str, str]:
-        """Return authentication headers for Cloudflare Workers AI."""
+        """Return authentication and AI Gateway routing headers."""
         token = self.cloudflare_api_token.get_secret_value()
         if not token:
             raise ValueError("CLOUDFLARE_API_TOKEN is required when AI_PROVIDER=cloudflare.")
-        return {"Authorization": f"Bearer {token}"}
+        if not self.cloudflare_ai_gateway_id:
+            raise ValueError(
+                "CLOUDFLARE_AI_GATEWAY_ID is required to route Workers AI through AI Gateway."
+            )
+        return {
+            "Authorization": f"Bearer {token}",
+            "cf-aig-gateway-id": self.cloudflare_ai_gateway_id,
+        }
 
 
 # Global singleton instance

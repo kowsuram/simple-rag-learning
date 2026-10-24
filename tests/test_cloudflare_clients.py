@@ -14,7 +14,10 @@ class TestCloudflareClients(unittest.TestCase):
         self.config = SimpleNamespace(
             ai_provider="cloudflare",
             cloudflare_ai_base_url="https://api.cloudflare.com/client/v4/accounts/test-account/ai/v1",
-            cloudflare_headers={"Authorization": "Bearer test-token"},
+            cloudflare_headers={
+                "Authorization": "Bearer test-token",
+                "cf-aig-gateway-id": "healthcare-gateway",
+            },
             embedding_model="@cf/baai/bge-base-en-v1.5",
             embedding_dim=768,
             ollama_base_url="http://localhost:11434",
