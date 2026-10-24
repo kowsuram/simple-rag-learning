@@ -5,6 +5,7 @@ from typing import List, Optional
 import requests
 from src.config import config
 from src.logger import log_embedding_details
+from src.observability import trace_observation
 
 
 class OllamaEmbedder:
@@ -21,6 +22,7 @@ class OllamaEmbedder:
         )
         self.expected_dim = config.embedding_dim
 
+    @trace_observation(name="text-embedding", as_type="embedding")
     def get_embedding(self, text: str, verbose: bool = True) -> List[float]:
         """Request an embedding vector for a given string.
         

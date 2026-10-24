@@ -25,13 +25,21 @@ for secret_name in (
     "LLM_MODEL",
     "EMBEDDING_MODEL",
     "EMBEDDING_DIM",
+    "LANGFUSE_PUBLIC_KEY",
+    "LANGFUSE_SECRET_KEY",
+    "LANGFUSE_BASE_URL",
+    "LANGFUSE_HOST",
 ):
     if secret_name in streamlit_secrets:
         os.environ[secret_name] = str(streamlit_secrets[secret_name])
 
+if "LANGFUSE_BASE_URL" not in os.environ and "LANGFUSE_HOST" in os.environ:
+    os.environ["LANGFUSE_BASE_URL"] = os.environ["LANGFUSE_HOST"]
+
 from src.config import config
 from src.db import db
 from src.agent import agent
+from src.observability import flush_langfuse
 from src.retriever import retriever
 from src.ingest import run_ingestion
 from src.chunker import chunker
@@ -190,7 +198,10 @@ with tab_prescriptions:
         st.markdown('<div class="phase-badge phase-query">PHASE 2: PGVECTOR RETRIEVAL & VECTOR SIMILARITY QUERYING</div>', unsafe_allow_html=True)
 
         with st.spinner("Embedding query & searching pgvector via cosine similarity (<=>)..."):
-            audit_result = agent.audit_prescription(compiled_rx, verbose=False)
+            try:
+                audit_result = agent.audit_prescription(compiled_rx, verbose=False)
+            finally:
+                flush_langfuse()
             retrieved_chunks = audit_result["retrieved_chunks"]
 
         st.markdown(f"**Retrieved Top-{len(retrieved_chunks)} Clinical Evidence Chunks from PostgreSQL:**")
@@ -240,7 +251,10 @@ with tab_chat:
         st.chat_message("user").write(active_query)
         with st.chat_message("assistant"):
             with st.spinner("Retrieving from pgvector and generating response..."):
-                res = agent.ask(active_query, verbose=False)
+                try:
+                    res = agent.ask(active_query, verbose=False)
+                finally:
+                    flush_langfuse()
             st.markdown(res["answer"])
             st.caption(f"⚡ Latency: {res['latency_ms']:.1f} ms | Grounded in pgvector")
 

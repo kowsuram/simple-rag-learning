@@ -213,6 +213,18 @@ CLOUDFLARE_API_TOKEN = "your-api-token"
 
 The default models are `@cf/meta/llama-3.2-3b-instruct` for chat and `@cf/baai/bge-base-en-v1.5` for embeddings. The embedding model returns 768 dimensions, matching the database schema. After switching embedding models, click **Re-Ingest All Medications** once to rebuild the stored vectors; this operation resets the existing `medication_chunks` table.
 
+### Optional Langfuse tracing
+
+To trace RAG queries, retrieval, embeddings, and model-generation timing, add the following to Streamlit Community Cloud **Settings → Secrets**:
+
+```toml
+LANGFUSE_PUBLIC_KEY = "your-public-key"
+LANGFUSE_SECRET_KEY = "your-secret-key"
+LANGFUSE_BASE_URL = "https://your-Langfuse-host"
+```
+
+Set `LANGFUSE_BASE_URL` to the URL shown by Langfuse for your project. The app creates nested observations but does not capture inputs or outputs, avoiding sending query text, retrieved content, prescriptions, or generated answers to tracing. Tracing is disabled when the public or secret key is missing.
+
 ---
 
 ## Directory Structure

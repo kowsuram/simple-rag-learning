@@ -5,6 +5,7 @@ from typing import List, Dict, Any, Optional
 from src.config import config
 from src.db import db
 from src.embedder import embedder
+from src.observability import trace_observation
 from src.logger import (
     console,
     log_step,
@@ -18,6 +19,7 @@ class HealthcareRetriever:
     def __init__(self, top_k: Optional[int] = None):
         self.top_k = top_k or config.top_k
 
+    @trace_observation(name="pgvector-retrieval", as_type="retriever")
     def retrieve(
         self,
         query: str,
