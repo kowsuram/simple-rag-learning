@@ -61,9 +61,36 @@ class HealthcareAgent:
             )
             response.raise_for_status()
             response_json = response.json()
+        except requests.exceptions.HTTPError as e:
+            status_code = e.response.status_code if e.response is not None else "unknown"
+            details = ""
+            if e.response is not None:
+                try:
+                    error_payload = e.response.json()
+                except ValueError:
+                    error_payload = {}
+                api_errors = error_payload.get("errors", [])
+                if isinstance(api_errors, list):
+                    messages = [
+                        item.get("message", "")
+                        for item in api_errors
+                        if isinstance(item, dict) and item.get("message")
+                    ]
+                    details = "; ".join(messages)
+                if not details:
+                    api_error = error_payload.get("error")
+                    if isinstance(api_error, dict):
+                        details = str(api_error.get("message", ""))
+                    elif isinstance(api_error, str):
+                        details = api_error
+            suffix = f": {details[:400]}" if details else ""
+            raise RuntimeError(
+                f"{self.provider} chat API rejected the request (HTTP {status_code}){suffix}."
+            ) from e
         except requests.exceptions.RequestException as e:
             raise RuntimeError(
-                f"Failed to query {self.provider} chat API at {endpoint}."
+                f"Failed to reach {self.provider} chat API at {endpoint} "
+                f"({type(e).__name__})."
             ) from e
 
         if self.provider == "cloudflare":
