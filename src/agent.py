@@ -33,7 +33,12 @@ class HealthcareAgent:
         self.provider = config.ai_provider
         self.llm_model = llm_model or config.llm_model
 
-    @trace_observation(name="llm-generation", as_type="generation")
+    @trace_observation(
+        name="llm-generation",
+        as_type="generation",
+        capture_input=True,
+        capture_output=True,
+    )
     def _generate_chat_response(self, messages: list[dict[str, str]], temperature: float) -> str:
         if self.provider == "cloudflare":
             endpoint = f"{config.cloudflare_ai_base_url}/chat/completions"
@@ -106,7 +111,12 @@ class HealthcareAgent:
             )
         return answer
 
-    @trace_observation(name="rag-query", as_type="chain")
+    @trace_observation(
+        name="rag-query",
+        as_type="chain",
+        capture_input=True,
+        capture_output=True,
+    )
     def ask(self, patient_query: str, verbose: bool = True) -> Dict[str, Any]:
         """Process a patient inquiry through the full RAG pipeline."""
         if verbose:
@@ -170,7 +180,12 @@ class HealthcareAgent:
             "model": self.llm_model
         }
 
-    @trace_observation(name="prescription-audit", as_type="chain")
+    @trace_observation(
+        name="prescription-audit",
+        as_type="chain",
+        capture_input=True,
+        capture_output=True,
+    )
     def audit_prescription(self, prescription: Dict[str, Any], verbose: bool = True) -> Dict[str, Any]:
         """Perform clinical safety screening on a patient prescription using pgvector RAG."""
         patient_name = prescription.get("patient_name", "Anonymous Patient")

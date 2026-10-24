@@ -17,16 +17,21 @@ def langfuse_configured() -> bool:
     )
 
 
-def trace_observation(name: str, as_type: str = "span") -> Callable[[F], F]:
-    """Trace a function when Langfuse is configured without capturing its I/O."""
+def trace_observation(
+    name: str,
+    as_type: str = "span",
+    capture_input: bool = False,
+    capture_output: bool = False,
+) -> Callable[[F], F]:
+    """Trace a function when configured, with optional input/output capture."""
     def decorate(func: F) -> F:
         if not langfuse_configured():
             return func
         return observe(
             name=name,
             as_type=as_type,
-            capture_input=False,
-            capture_output=False,
+            capture_input=capture_input,
+            capture_output=capture_output,
         )(func)
 
     return decorate

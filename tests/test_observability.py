@@ -21,7 +21,7 @@ class TestLangfuseTracing(unittest.TestCase):
         self.assertIs(traced_operation, operation)
         observe.assert_not_called()
 
-    def test_tracing_decorator_disables_input_and_output_capture(self):
+    def test_tracing_decorator_disables_input_and_output_capture_by_default(self):
         decorator = Mock(return_value=lambda func: func)
         with (
             patch.dict(
@@ -42,6 +42,34 @@ class TestLangfuseTracing(unittest.TestCase):
             as_type="chain",
             capture_input=False,
             capture_output=False,
+        )
+
+    def test_tracing_decorator_can_capture_input_and_output(self):
+        decorator = Mock(return_value=lambda func: func)
+        with (
+            patch.dict(
+                os.environ,
+                {
+                    "LANGFUSE_PUBLIC_KEY": "public",
+                    "LANGFUSE_SECRET_KEY": "secret",
+                },
+                clear=True,
+            ),
+            patch("src.observability.observe", decorator),
+        ):
+            traced_operation = trace_observation(
+                "test",
+                as_type="generation",
+                capture_input=True,
+                capture_output=True,
+            )(lambda: "result")
+
+        self.assertTrue(callable(traced_operation))
+        decorator.assert_called_once_with(
+            name="test",
+            as_type="generation",
+            capture_input=True,
+            capture_output=True,
         )
 
     def test_flush_only_runs_when_credentials_are_configured(self):

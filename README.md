@@ -215,7 +215,7 @@ The default models are `@cf/meta/llama-3.2-3b-instruct` for chat and `@cf/baai/b
 
 ### Optional Langfuse tracing
 
-To trace RAG queries, retrieval, embeddings, and model-generation timing, add the following to Streamlit Community Cloud **Settings → Secrets**:
+To trace RAG queries, retrieval, embeddings, and model generation, add the following to Streamlit Community Cloud **Settings → Secrets**:
 
 ```toml
 LANGFUSE_PUBLIC_KEY = "your-public-key"
@@ -223,7 +223,7 @@ LANGFUSE_SECRET_KEY = "your-secret-key"
 LANGFUSE_BASE_URL = "https://your-Langfuse-host"
 ```
 
-Set `LANGFUSE_BASE_URL` to the URL shown by Langfuse for your project. The app creates nested observations but does not capture inputs or outputs, avoiding sending query text, retrieved content, prescriptions, or generated answers to tracing. Tracing is disabled when the public or secret key is missing.
+Set `LANGFUSE_BASE_URL` to the URL shown by Langfuse for your project. Query, prescription-audit, and LLM-generation observations capture their inputs and outputs. This can include entered prescription details and prompts; only use it with data you are comfortable sending to Langfuse. Embedding and retrieval spans do not capture their inputs or outputs. Tracing is disabled when the public or secret key is missing.
 
 ---
 
