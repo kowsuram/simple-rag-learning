@@ -8,6 +8,22 @@ from src.config import AppConfig
 
 
 class TestAppConfig(unittest.TestCase):
+    def test_cloudflare_credentials_select_cloudflare_defaults(self):
+        with patch.dict(
+            os.environ,
+            {
+                "CLOUDFLARE_ACCOUNT_ID": "test-account",
+                "CLOUDFLARE_API_TOKEN": "test-token",
+            },
+            clear=True,
+        ):
+            config = AppConfig()
+
+        self.assertEqual(config.ai_provider, "cloudflare")
+        self.assertEqual(config.llm_model, "@cf/meta/llama-3.1-8b-instruct")
+        self.assertEqual(config.embedding_model, "@cf/baai/bge-base-en-v1.5")
+        self.assertEqual(config.embedding_dim, 768)
+
     def test_database_url_takes_precedence_over_local_settings(self):
         database_url = "postgresql://user:password@db.example/neondb?sslmode=require"
         with patch.dict(

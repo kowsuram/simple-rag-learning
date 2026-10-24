@@ -176,6 +176,12 @@ To view and inspect the `public.medication_chunks` table visually:
 
 ---
 
+## TODO
+
+- [ ] Try unstructured ingestion from PDFs and approved online sources; extract the text, retain source and page metadata, and validate it before chunking and embedding.
+
+---
+
 ## Deploying with Neon on Streamlit Community Cloud
 
 1. In Neon, open **Connect**, select your database and branch, and copy the pooled connection string.
@@ -194,6 +200,18 @@ To view and inspect the `public.medication_chunks` table visually:
    ```
 
 For local development, put `DATABASE_URL` in the ignored `.env` file. The existing Ollama service is separate from the database and must also be reachable by the deployed app for embeddings and LLM responses.
+
+### Cloudflare Workers AI for cloud-hosted models
+
+The Streamlit app supports Cloudflare Workers AI for both chat and embeddings. Create a Workers AI API token with Workers AI Read and Edit permissions, then add these values under the app's **Settings → Secrets**:
+
+```toml
+AI_PROVIDER = "cloudflare"
+CLOUDFLARE_ACCOUNT_ID = "your-account-id"
+CLOUDFLARE_API_TOKEN = "your-api-token"
+```
+
+The default models are `@cf/meta/llama-3.1-8b-instruct` for chat and `@cf/baai/bge-base-en-v1.5` for embeddings. The embedding model returns 768 dimensions, matching the database schema. After switching embedding models, click **Re-Ingest All Medications** once to rebuild the stored vectors; this operation resets the existing `medication_chunks` table.
 
 ---
 

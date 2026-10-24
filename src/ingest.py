@@ -87,12 +87,13 @@ def run_ingestion(reset_db: bool = True, max_docs: int = None) -> int:
         console.print(f"[bold cyan]Generated {len(chunks)} chunks for {med_name}[/bold cyan]\n")
 
         # ----------------------------------------------------
-        # STEP 4: EMBEDDING GENERATION VIA OLLAMA
+        # STEP 4: EMBEDDING GENERATION
         # ----------------------------------------------------
         log_step(
             4,
             f"Generating Vector Embeddings: {med_name}",
-            f"Sending each chunk to local Ollama '{config.embedding_model}' to convert text into {config.embedding_dim}-dimensional semantic vector coordinates."
+            f"Sending each chunk to {config.ai_provider} model '{config.embedding_model}' to generate "
+            f"{config.embedding_dim}-dimensional semantic vectors."
         )
 
         for i, chk in enumerate(chunks):

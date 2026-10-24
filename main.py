@@ -16,27 +16,32 @@ def show_status() -> None:
     
     log_header("HEALTHCARE RAG: SYSTEM STATUS & HEALTH CHECK")
     
-    # 1. Check Ollama
-    ollama_ok = False
-    models = []
-    try:
-        r = requests.get(f"{config.ollama_base_url}/api/tags", timeout=5)
-        if r.status_code == 200:
-            ollama_ok = True
-            models = [m["name"] for m in r.json().get("models", [])]
-    except Exception:
-        pass
+    # 1. Check AI provider
+    if config.ai_provider == "ollama":
+        ollama_ok = False
+        models = []
+        try:
+            r = requests.get(f"{config.ollama_base_url}/api/tags", timeout=5)
+            if r.status_code == 200:
+                ollama_ok = True
+                models = [m["name"] for m in r.json().get("models", [])]
+        except requests.exceptions.RequestException:
+            pass
 
-    console.print(f"[bold cyan]Ollama Base URL:[/bold cyan] {config.ollama_base_url}")
-    if ollama_ok:
-        console.print(f"  [green][OK] Connected[/green]")
-        console.print(f"  Available Models: {', '.join(models)}")
-        has_llm = any(config.llm_model.split(":")[0] in m for m in models)
-        has_embed = any(config.embedding_model.split(":")[0] in m for m in models)
-        console.print(f"  Configured LLM ({config.llm_model}): {'[green][OK] Ready[/green]' if has_llm else '[red][X] Not found (run ollama pull)'}")
-        console.print(f"  Configured Embedder ({config.embedding_model}): {'[green][OK] Ready[/green]' if has_embed else '[red][X] Not found (run ollama pull)'}")
+        console.print(f"[bold cyan]Ollama Base URL:[/bold cyan] {config.ollama_base_url}")
+        if ollama_ok:
+            console.print("  [green][OK] Connected[/green]")
+            console.print(f"  Available Models: {', '.join(models)}")
+            has_llm = any(config.llm_model.split(":")[0] in m for m in models)
+            has_embed = any(config.embedding_model.split(":")[0] in m for m in models)
+            console.print(f"  Configured LLM ({config.llm_model}): {'[green][OK] Ready[/green]' if has_llm else '[red][X] Not found (run ollama pull)'}")
+            console.print(f"  Configured Embedder ({config.embedding_model}): {'[green][OK] Ready[/green]' if has_embed else '[red][X] Not found (run ollama pull)'}")
+        else:
+            console.print("  [red][X] Ollama is unreachable. Make sure 'ollama serve' is running.[/red]")
     else:
-        console.print("  [red][X] Ollama is unreachable. Make sure 'ollama serve' is running.[/red]")
+        console.print("[bold cyan]AI Provider:[/bold cyan] Cloudflare Workers AI")
+        console.print(f"  Configured LLM: {config.llm_model}")
+        console.print(f"  Configured Embedder: {config.embedding_model} ({config.embedding_dim}-D)")
 
     console.print()
 

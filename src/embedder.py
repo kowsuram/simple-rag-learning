@@ -1,4 +1,4 @@
-"""Ollama embedding client with latency tracking and visual vector previews."""
+"""Embedding client with latency tracking and visual vector previews."""
 
 import time
 from typing import List, Optional
@@ -8,40 +8,71 @@ from src.logger import log_embedding_details
 
 
 class OllamaEmbedder:
-    """Generates dense vector embeddings using local Ollama model."""
+    """Generates dense vector embeddings using the configured AI provider."""
 
     def __init__(self, model_name: Optional[str] = None, base_url: Optional[str] = None):
+        self.provider = config.ai_provider
         self.model_name = model_name or config.embedding_model
         self.base_url = (base_url or config.ollama_base_url).rstrip("/")
-        self.endpoint = f"{self.base_url}/api/embeddings"
+        self.endpoint = (
+            f"{config.cloudflare_ai_base_url}/embeddings"
+            if self.provider == "cloudflare"
+            else f"{self.base_url}/api/embeddings"
+        )
         self.expected_dim = config.embedding_dim
 
     def get_embedding(self, text: str, verbose: bool = True) -> List[float]:
-        """Request embedding vector for a given string from Ollama.
+        """Request an embedding vector for a given string.
         
         Educational aspect:
           Text is converted by the neural network into an N-dimensional vector
           (e.g., 768 numbers) representing its semantic coordinates in latent space.
         """
         start_time = time.perf_counter()
-        payload = {
-            "model": self.model_name,
-            "prompt": text
-        }
+        if self.provider == "cloudflare":
+            payload = {"model": self.model_name, "input": text}
+            headers = config.cloudflare_headers
+        else:
+            payload = {"model": self.model_name, "prompt": text}
+            headers = None
 
         try:
-            response = requests.post(self.endpoint, json=payload, timeout=60)
+            response = requests.post(
+                self.endpoint,
+                json=payload,
+                headers=headers,
+                timeout=60,
+            )
             response.raise_for_status()
             data = response.json()
         except requests.exceptions.RequestException as e:
             raise RuntimeError(
-                f"Failed to connect to Ollama at {self.endpoint}. "
-                f"Ensure Ollama is running ('ollama serve') and model '{self.model_name}' is pulled."
+                f"Failed to request an embedding from {self.provider} at {self.endpoint}."
             ) from e
 
-        embedding = data.get("embedding", [])
+        if self.provider == "cloudflare":
+            rows = data.get("data")
+            if rows is None and isinstance(data.get("result"), dict):
+                rows = data["result"].get("data")
+            if rows and isinstance(rows[0], dict):
+                embedding = rows[0].get("embedding", [])
+            elif rows and isinstance(rows[0], list):
+                embedding = rows[0]
+            else:
+                embedding = []
+        else:
+            embedding = data.get("embedding", [])
+
         if not embedding:
-            raise ValueError(f"Ollama returned an empty embedding array for model '{self.model_name}'.")
+            raise ValueError(
+                f"{self.provider} returned an empty embedding for model '{self.model_name}'."
+            )
+        embedding = [float(value) for value in embedding]
+        if len(embedding) != self.expected_dim:
+            raise ValueError(
+                f"Embedding model '{self.model_name}' returned {len(embedding)} dimensions; "
+                f"the database expects {self.expected_dim}."
+            )
 
         elapsed_ms = (time.perf_counter() - start_time) * 1000
 

@@ -1,4 +1,4 @@
-"""Clinical Healthcare RAG Agent with prompt guardrails and Ollama generation."""
+"""Clinical Healthcare RAG Agent with prompt guardrails and configurable AI generation."""
 
 import time
 from typing import Dict, Any, Optional
@@ -29,8 +29,53 @@ class HealthcareAgent:
     """Clinical RAG Agent coordinating retrieval, prompt synthesis, and LLM inference."""
 
     def __init__(self, llm_model: Optional[str] = None):
+        self.provider = config.ai_provider
         self.llm_model = llm_model or config.llm_model
-        self.ollama_chat_endpoint = f"{config.ollama_base_url.rstrip('/')}/api/chat"
+
+    def _generate_chat_response(self, messages: list[dict[str, str]], temperature: float) -> str:
+        if self.provider == "cloudflare":
+            endpoint = f"{config.cloudflare_ai_base_url}/chat/completions"
+            headers = config.cloudflare_headers
+            payload = {
+                "model": self.llm_model,
+                "messages": messages,
+                "temperature": temperature,
+                "stream": False,
+            }
+        else:
+            endpoint = f"{config.ollama_base_url.rstrip('/')}/api/chat"
+            headers = None
+            payload = {
+                "model": self.llm_model,
+                "messages": messages,
+                "stream": False,
+                "options": {"temperature": temperature},
+            }
+
+        try:
+            response = requests.post(
+                endpoint,
+                json=payload,
+                headers=headers,
+                timeout=120,
+            )
+            response.raise_for_status()
+            response_json = response.json()
+        except requests.exceptions.RequestException as e:
+            raise RuntimeError(
+                f"Failed to query {self.provider} chat API at {endpoint}."
+            ) from e
+
+        if self.provider == "cloudflare":
+            choices = response_json.get("choices", [])
+            answer = choices[0].get("message", {}).get("content", "") if choices else ""
+        else:
+            answer = response_json.get("message", {}).get("content", "")
+        if not isinstance(answer, str) or not answer.strip():
+            raise ValueError(
+                f"{self.provider} returned no chat response for model '{self.llm_model}'."
+            )
+        return answer
 
     def ask(self, patient_query: str, verbose: bool = True) -> Dict[str, Any]:
         """Process a patient inquiry through the full RAG pipeline."""
@@ -62,7 +107,7 @@ class HealthcareAgent:
             log_step(
                 4,
                 f"LLM Generation ({self.llm_model})",
-                f"Sending augmented context and question to local Ollama '{self.llm_model}'."
+                f"Sending augmented context and question to {self.provider} '{self.llm_model}'."
             )
 
         user_content = (
@@ -80,26 +125,7 @@ class HealthcareAgent:
         ]
 
         start_time = time.perf_counter()
-        try:
-            res = requests.post(
-                self.ollama_chat_endpoint,
-                json={
-                    "model": self.llm_model,
-                    "messages": messages,
-                    "stream": False,
-                    "options": {
-                        "temperature": 0.1  # Low temperature for factual, grounded clinical responses
-                    }
-                },
-                timeout=120
-            )
-            res.raise_for_status()
-            response_json = res.json()
-            answer = response_json.get("message", {}).get("content", "")
-        except requests.exceptions.RequestException as e:
-            raise RuntimeError(
-                f"Failed to query Ollama LLM at {self.ollama_chat_endpoint}. Error: {e}"
-            )
+        answer = self._generate_chat_response(messages, temperature=0.1)
 
         latency_ms = (time.perf_counter() - start_time) * 1000
 
@@ -186,21 +212,13 @@ Conduct a systematic clinical safety audit formatted with these clear sections:
 """
 
         start_time = time.perf_counter()
-        res = requests.post(
-            self.ollama_chat_endpoint,
-            json={
-                "model": self.llm_model,
-                "messages": [
-                    {"role": "system", "content": "You are an expert Clinical Pharmacist conducting rigorous prescription safety audits grounded in approved pharmaceutical monographs."},
-                    {"role": "user", "content": eval_prompt}
-                ],
-                "stream": False,
-                "options": {"temperature": 0.1}
-            },
-            timeout=120
+        audit_text = self._generate_chat_response(
+            [
+                {"role": "system", "content": "You are an expert Clinical Pharmacist conducting rigorous prescription safety audits grounded in approved pharmaceutical monographs."},
+                {"role": "user", "content": eval_prompt},
+            ],
+            temperature=0.1,
         )
-        res.raise_for_status()
-        audit_text = res.json().get("message", {}).get("content", "")
         latency_ms = (time.perf_counter() - start_time) * 1000
 
         return {

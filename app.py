@@ -12,7 +12,20 @@ try:
 except StreamlitSecretNotFoundError:
     streamlit_secrets = {}
 
-for secret_name in ("DATABASE_URL", "DB_HOST", "DB_PORT", "DB_NAME", "DB_USER", "DB_PASSWORD"):
+for secret_name in (
+    "DATABASE_URL",
+    "DB_HOST",
+    "DB_PORT",
+    "DB_NAME",
+    "DB_USER",
+    "DB_PASSWORD",
+    "AI_PROVIDER",
+    "CLOUDFLARE_ACCOUNT_ID",
+    "CLOUDFLARE_API_TOKEN",
+    "LLM_MODEL",
+    "EMBEDDING_MODEL",
+    "EMBEDDING_DIM",
+):
     if secret_name in streamlit_secrets:
         os.environ[secret_name] = str(streamlit_secrets[secret_name])
 
