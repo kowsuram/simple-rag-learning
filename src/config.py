@@ -14,6 +14,7 @@ class AppConfig(BaseModel):
     """Application settings schema."""
     
     # Database
+    database_url: str = Field(default_factory=lambda: os.getenv("DATABASE_URL", ""))
     db_host: str = Field(default_factory=lambda: os.getenv("DB_HOST", "localhost"))
     db_port: int = Field(default_factory=lambda: int(os.getenv("DB_PORT", "5433")))
     db_name: str = Field(default_factory=lambda: os.getenv("DB_NAME", "healthcaredb"))
@@ -37,7 +38,9 @@ class AppConfig(BaseModel):
 
     @property
     def postgres_dsn(self) -> str:
-        """Construct PostgreSQL connection URI."""
+        """Return DATABASE_URL when configured, otherwise build the local DSN."""
+        if self.database_url:
+            return self.database_url
         return (
             f"postgresql://{self.db_user}:{self.db_password}@"
             f"{self.db_host}:{self.db_port}/{self.db_name}"

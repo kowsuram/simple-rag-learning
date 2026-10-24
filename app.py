@@ -1,9 +1,21 @@
 """Streamlit Web GUI for Healthcare RAG Agent with Prescription Screener & pgvector Explorer."""
 
 import json
+import os
 from pathlib import Path
 import streamlit as st
+from streamlit.errors import StreamlitSecretNotFoundError
 import pandas as pd
+
+try:
+    streamlit_secrets = st.secrets
+except StreamlitSecretNotFoundError:
+    streamlit_secrets = {}
+
+for secret_name in ("DATABASE_URL", "DB_HOST", "DB_PORT", "DB_NAME", "DB_USER", "DB_PASSWORD"):
+    if secret_name in streamlit_secrets:
+        os.environ[secret_name] = str(streamlit_secrets[secret_name])
+
 from src.config import config
 from src.db import db
 from src.agent import agent
@@ -45,7 +57,7 @@ with st.sidebar:
     st.header("⚙️ System Status")
     try:
         chunk_count = db.get_chunk_count()
-        st.success(f"Connected to PostgreSQL ({config.db_host}:{config.db_port})")
+        st.success("Connected to PostgreSQL")
         st.metric("Total pgvector Chunks", chunk_count)
     except Exception as e:
         st.error(f"Database Error: {e}")

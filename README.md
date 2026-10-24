@@ -176,6 +176,27 @@ To view and inspect the `public.medication_chunks` table visually:
 
 ---
 
+## Deploying with Neon on Streamlit Community Cloud
+
+1. In Neon, open **Connect**, select your database and branch, and copy the pooled connection string.
+2. In Streamlit Community Cloud, open the app's **Settings → Secrets** and add:
+
+   ```toml
+   DATABASE_URL = "postgresql://<user>:<password>@<host>/<database>?sslmode=require"
+   ```
+
+   Keep the connection string in Streamlit Secrets; do not commit it to the repository.
+3. The app uses `DATABASE_URL` when present and keeps the existing `DB_*` settings as the local-development fallback.
+4. In the Neon SQL Editor, enable pgvector once for the database:
+
+   ```sql
+   CREATE EXTENSION IF NOT EXISTS vector;
+   ```
+
+For local development, put `DATABASE_URL` in the ignored `.env` file. The existing Ollama service is separate from the database and must also be reachable by the deployed app for embeddings and LLM responses.
+
+---
+
 ## Directory Structure
 ```
 healthcare-rag/
