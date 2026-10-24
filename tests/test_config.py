@@ -20,7 +20,7 @@ class TestAppConfig(unittest.TestCase):
             config = AppConfig()
 
         self.assertEqual(config.ai_provider, "cloudflare")
-        self.assertEqual(config.llm_model, "@cf/meta/llama-3.1-8b-instruct")
+        self.assertEqual(config.llm_model, "@cf/meta/llama-3.2-3b-instruct")
         self.assertEqual(config.embedding_model, "@cf/baai/bge-base-en-v1.5")
         self.assertEqual(config.embedding_dim, 768)
 

@@ -25,7 +25,7 @@ def _default_llm_model() -> str:
     if configured_model:
         return configured_model
     return (
-        "@cf/meta/llama-3.1-8b-instruct"
+        "@cf/meta/llama-3.2-3b-instruct"
         if _default_ai_provider() == "cloudflare"
         else "llama3.2:latest"
     )

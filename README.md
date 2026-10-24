@@ -211,7 +211,7 @@ CLOUDFLARE_ACCOUNT_ID = "your-account-id"
 CLOUDFLARE_API_TOKEN = "your-api-token"
 ```
 
-The default models are `@cf/meta/llama-3.1-8b-instruct` for chat and `@cf/baai/bge-base-en-v1.5` for embeddings. The embedding model returns 768 dimensions, matching the database schema. After switching embedding models, click **Re-Ingest All Medications** once to rebuild the stored vectors; this operation resets the existing `medication_chunks` table.
+The default models are `@cf/meta/llama-3.2-3b-instruct` for chat and `@cf/baai/bge-base-en-v1.5` for embeddings. The embedding model returns 768 dimensions, matching the database schema. After switching embedding models, click **Re-Ingest All Medications** once to rebuild the stored vectors; this operation resets the existing `medication_chunks` table.
 
 ---
 
