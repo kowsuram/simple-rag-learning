@@ -7,6 +7,7 @@ from src.config import config
 from src.db import db
 from src.chunker import chunker
 from src.embedder import embedder
+from src.document_loader import load_document_files
 from rich.panel import Panel
 from src.logger import (
     console,
@@ -18,7 +19,7 @@ from src.logger import (
 
 def load_medication_files(data_dir: Path) -> List[Dict[str, Any]]:
     """Load all medication JSON files from the data directory."""
-    files = list(data_dir.glob("*.json"))
+    files = sorted(data_dir.glob("*.json"), key=lambda path: path.name.lower())
     if not files:
         raise FileNotFoundError(f"No medication JSON files found in {data_dir}")
 
@@ -28,6 +29,19 @@ def load_medication_files(data_dir: Path) -> List[Dict[str, Any]]:
             data = json.load(f)
             monographs.append(data)
     return monographs
+
+
+def load_source_documents(data_dir: Path) -> List[Dict[str, Any]]:
+    """Load JSON monographs and supported Word/PDF documents from a directory."""
+    json_files = sorted(data_dir.glob("*.json"), key=lambda path: path.name.lower())
+    sources = load_medication_files(data_dir) if json_files else []
+    sources.extend(load_document_files(data_dir))
+    if not sources:
+        raise FileNotFoundError(
+            f"No supported source files found in {data_dir}. "
+            "Add JSON, DOCX, DOC, or text-based PDF files."
+        )
+    return sources
 
 
 def run_ingestion(reset_db: bool = True, max_docs: int = None) -> int:
@@ -52,14 +66,14 @@ def run_ingestion(reset_db: bool = True, max_docs: int = None) -> int:
     # ----------------------------------------------------
     log_step(
         2,
-        "Load Clinical Monographs (Source of Truth)",
-        "Reading authoritative medication reference data from JSON monographs."
+        "Load Source Documents",
+        "Reading JSON medication monographs and extracting text from Word/PDF documents."
     )
-    monographs = load_medication_files(config.data_dir)
+    monographs = load_source_documents(config.data_dir)
     if max_docs:
         monographs = monographs[:max_docs]
 
-    console.print(f"[bold green]Found {len(monographs)} medication monographs in {config.data_dir}[/bold green]\n")
+    console.print(f"[bold green]Found {len(monographs)} source documents in {config.data_dir}[/bold green]\n")
 
     total_chunks_stored = 0
 
@@ -67,23 +81,41 @@ def run_ingestion(reset_db: bool = True, max_docs: int = None) -> int:
         med_name = monograph.get("medication_name", "Unknown")
         brand_names = monograph.get("brand_names", [])
         med_class = monograph.get("therapeutic_class", "")
-        
-        # Calculate total characters across all sections
-        total_chars = sum(len(str(v)) for k, v in monograph.items() if isinstance(v, str))
-        sections_count = len([k for k, v in monograph.items() if isinstance(v, str)])
+
+        if monograph.get("source_type") == "document":
+            total_chars = len(monograph["document_text"])
+            sections_count = 1
+        else:
+            total_chars = sum(len(str(v)) for v in monograph.values() if isinstance(v, str))
+            sections_count = len([v for v in monograph.values() if isinstance(v, str)])
 
         log_document_loaded(med_name, brand_names, med_class, sections_count, total_chars)
 
         # ----------------------------------------------------
         # STEP 3: SECTION-AWARE CHUNKING WITH OVERLAP
         # ----------------------------------------------------
-        log_step(
-            3,
-            f"Chunking Document: {med_name}",
-            f"Partitioning {med_name} into contextualized chunks (max size: {config.chunk_size} chars, overlap: {config.chunk_overlap} chars) "
-            f"to prevent loss of clinical contraindications and dosage limits across boundaries."
-        )
-        chunks = chunker.chunk_monograph(monograph, verbose=True)
+        source_file = monograph.get("source_file")
+        if source_file:
+            log_step(
+                3,
+                f"Chunking Document: {med_name}",
+                f"Partitioning extracted text from {source_file} into overlapping chunks "
+                f"(max size: {config.chunk_size} chars, overlap: {config.chunk_overlap} chars)."
+            )
+            chunks = chunker.chunk_text_document(
+                document_name=med_name,
+                text=monograph["document_text"],
+                source_file=source_file,
+                verbose=True,
+            )
+        else:
+            log_step(
+                3,
+                f"Chunking Document: {med_name}",
+                f"Partitioning {med_name} into contextualized chunks (max size: {config.chunk_size} chars, overlap: {config.chunk_overlap} chars) "
+                f"to prevent loss of clinical contraindications and dosage limits across boundaries."
+            )
+            chunks = chunker.chunk_monograph(monograph, verbose=True)
         console.print(f"[bold cyan]Generated {len(chunks)} chunks for {med_name}[/bold cyan]\n")
 
         # ----------------------------------------------------

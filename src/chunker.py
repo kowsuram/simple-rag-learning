@@ -133,6 +133,58 @@ class MedicationChunker:
 
         return all_chunks
 
+    def chunk_text_document(
+        self,
+        document_name: str,
+        text: str,
+        source_file: str,
+        verbose: bool = True
+    ) -> List[Dict[str, Any]]:
+        """Chunk extracted document text while preserving its source filename."""
+        sub_chunks = self.split_text_with_overlap(
+            text,
+            max_chars=self.chunk_size,
+            overlap_chars=self.chunk_overlap,
+        )
+        all_chunks = []
+
+        for chunk_index, sub_chunk in enumerate(sub_chunks):
+            content = (
+                f"Document: {document_name}\n"
+                f"Source file: {source_file}\n"
+                f"Content: {sub_chunk['text']}"
+            )
+            chunk_data = {
+                "medication_name": document_name,
+                "section": "Document Text",
+                "chunk_index": chunk_index,
+                "content": content,
+                "raw_text": sub_chunk["text"],
+                "char_start": sub_chunk["start"],
+                "char_end": sub_chunk["end"],
+                "overlap_chars": sub_chunk["overlap"],
+                "metadata": {
+                    "source_file": source_file,
+                    "document_name": document_name,
+                    "char_length": len(sub_chunk["text"]),
+                },
+            }
+            all_chunks.append(chunk_data)
+
+            if verbose:
+                log_chunk_details(
+                    medication=document_name,
+                    section="Document Text",
+                    chunk_index=chunk_index,
+                    total_chunks=len(sub_chunks),
+                    start_char=sub_chunk["start"],
+                    end_char=sub_chunk["end"],
+                    text=sub_chunk["text"],
+                    overlap_chars=sub_chunk["overlap"],
+                )
+
+        return all_chunks
+
 
 # Global chunker instance
 chunker = MedicationChunker()

@@ -9,8 +9,8 @@ A simple, transparent, and educational **Retrieval-Augmented Generation (RAG)** 
 ```
                                   INGESTION FLOW
 +-------------------------+     +-------------------+     +---------------------+     +--------------------+
-|  Medication Monographs  | --> | Section-Aware     | --> | Ollama Embedding    | --> | PostgreSQL +       |
-|  (data/medications/*.json)     | Chunking + Overlap|     | (nomic-embed-text)  |     | pgvector Storage   |
+|  Source Documents       | --> | Section-Aware     | --> | Ollama Embedding    | --> | PostgreSQL +       |
+|  (JSON, DOCX, DOC, PDF) |     | Chunking + Overlap|     | (nomic-embed-text)  |     | pgvector Storage   |
 +-------------------------+     +-------------------+     +---------------------+     +--------------------+
                                          |                            |                           |
                                   [Log Size, Span,            [Log 768-D Dims,            [Log SQL Table,
@@ -132,6 +132,12 @@ Run ingestion with verbose educational logs:
 python main.py ingest
 ```
 
+JSON monographs continue to use section-aware chunking. You can also place `.docx`,
+`.doc`, and text-based `.pdf` files in `data/medications`; extracted text is chunked
+and stored with the source filename in its metadata. Scanned/image-only PDFs are
+not OCR-processed and will report an extraction error. Legacy `.doc` files require
+LibreOffice installed with `soffice` available on `PATH`.
+
 #### 6. Launch the Streamlit Web Dashboard & Database Explorer
 ```powershell
 python -m streamlit run app.py --server.port 8505
@@ -178,7 +184,7 @@ To view and inspect the `public.medication_chunks` table visually:
 
 ## TODO
 
-- [ ] Try unstructured ingestion from PDFs and approved online sources; extract the text, retain source and page metadata, and validate it before chunking and embedding.
+- [ ] Add OCR support for scanned PDFs and ingestion from approved online sources.
 
 ---
 
@@ -234,6 +240,7 @@ healthcare-rag/
 ├── data/
 │   └── medications/              # Authoritative clinical monographs
 │       ├── paracetamol.json
+│       ├── approved-reference.docx
 │       ├── ibuprofen.json
 │       ├── amoxicillin.json
 │       ├── metformin.json
